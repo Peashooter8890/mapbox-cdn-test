@@ -1,57 +1,50 @@
-import React, { useRef, useEffect, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css'; // Import the CSS here
+import React from 'react';
+// Correct import for React 18+ createRoot API
+import ReactDOM from 'react-dom/client'; 
+import MapComponent from './MapComponent';
 
-mapboxgl.accessToken = 'pk.eyJ1IjoicGVhc2hvb3RlciIsImEiOiJjbWFzdzk1b2kwcGd0MmtwcXd4cmVmcTk4In0.ULAjkgtUlUV18OirDsnSgQ';
+const CONTAINER_ID = 'mapbox-app-container';
+let root = null; // Keep a reference to the root outside the functions
 
-const MapComponent = () => {
-  const mapContainerRef = useRef(null);
-  const mapRef = useRef(null);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
+// This function creates its own container and renders the app into it
+export function mount(props) {
+  // Prevent re-mounting if the root is already active
+  if (root) {
+    return;
+  }
 
-  useEffect(() => {
-    if (mapRef.current) return; // Initialize map only once
-
-    mapRef.current = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-74.0059, 40.7128],
-      zoom: 9,
-    });
-
-    mapRef.current.on('load', () => setIsMapLoaded(true));
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, []);
-
-  const sendZoomMessage = (coordinates) => {
-    if (isMapLoaded && mapRef.current) {
-      mapRef.current.flyTo({
-        center: coordinates,
-        zoom: 12,
-        essential: true
-      });
-    }
-  };
+  // 1. Create the container div programmatically
+  const containerNode = document.createElement('div');
+  containerNode.id = CONTAINER_ID;
+  containerNode.style.width = '100%';
+  containerNode.style.height = '100vh';
   
-  return (
-    <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
-      <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
-      <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1, background: 'white', padding: '10px' }}>
-        <button onClick={() => sendZoomMessage([-74.0059, 40.7128])}>
-          Zoom to New York
-        </button>
-        <button onClick={() => sendZoomMessage([-118.2437, 34.0522])}>
-          Zoom to Los Angeles
-        </button>
-      </div>
-    </div>
-  );
-};
+  // 2. Append the container to the document's body
+  document.body.appendChild(containerNode);
 
-export default MapComponent;
+  // 3. Create a root and render the React component
+  root = ReactDOM.createRoot(containerNode);
+  root.render(
+    <React.StrictMode>
+      <MapComponent {...props} />
+    </React.StrictMode>
+  );
+}
+
+// This function cleans up the component and its container
+export function unmount() {
+  if (root) {
+    // Unmount the component using the root's unmount method
+    root.unmount();
+    root = null; // Clear the reference
+    
+    // Also remove the container div from the DOM
+    const containerNode = document.getElementById(CONTAINER_ID);
+    if (containerNode) {
+      containerNode.remove();
+    }
+  }
+}
+
+// Expose these functions on the global window object
+window.MapboxApp = { mount, unmount };
