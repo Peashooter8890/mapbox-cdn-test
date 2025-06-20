@@ -1,6 +1,6 @@
 import React from 'react';
 // Correct import for React 18+ createRoot API
-import ReactDOM from 'react-dom/client'; 
+import * as ReactDOMClient from 'react-dom/client';
 import MapComponent from './MapComponent';
 
 const CONTAINER_ID = 'mapbox-app-container';
@@ -23,7 +23,7 @@ export function mount(props) {
   document.body.appendChild(containerNode);
 
   // 3. Create a root and render the React component
-  root = ReactDOM.createRoot(containerNode);
+  root = ReactDOMClient.createRoot(containerNode);
   root.render(
     <React.StrictMode>
       <MapComponent {...props} />
