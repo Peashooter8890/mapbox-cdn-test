@@ -1,6 +1,10 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import MapComponent from './MapComponent';
 
-// This is the crucial part. We are not mounting anything here.
-// We are simply making the component available on a global object.
-export { MapComponent };
+class MapWebComponent extends HTMLElement {
+  connectedCallback() {
+    ReactDOM.render(<MapComponent />, this.attachShadow({ mode: 'open' }));
+  }
+}
+customElements.define('map-component', MapWebComponent);

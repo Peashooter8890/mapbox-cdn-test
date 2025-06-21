@@ -1,44 +1,34 @@
-// webpack.config.js
 const path = require('path');
 
 module.exports = {
-  // The entry point of your application
-  entry: './src/index.js',
-  
-  // How and where to output the final bundle
+  entry: './src/MapComponent.js', // Adjust if your entry file is different
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'mapbox-bundle.js', // The single output file
-    library: 'MapboxApp', // A global variable to access your app
-    libraryTarget: 'umd'
+    filename: 'map-component.bundle.js',
+    library: 'MapComponent', // This will be window.MapComponent
+    libraryTarget: 'umd',    // Universal Module Definition for max compatibility
+    globalObject: 'this',    // Ensures compatibility in various environments
   },
-  
-  // How to handle different file types
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-react']
-          }
-        }
+        use: 'babel-loader', // Ensure you have Babel configured for React
       },
       {
-        // This rule handles CSS files
         test: /\.css$/,
-        // style-loader injects CSS into the DOM. css-loader interprets @import and url()
-        use: ['style-loader', 'css-loader'] 
-      }
-    ]
+        use: ['style-loader', 'css-loader'], // To bundle mapbox-gl CSS
+      },
+    ],
   },
-  
-  // Optional: For a smaller bundle, you can treat React as an external dependency
-  // if you plan to load it from a separate CDN link in CasualOS.
+  resolve: {
+    extensions: ['.js', '.jsx'],
+    modules: ['node_modules'],
+  },
   externals: {
-    react: 'React',
-    'react-dom': 'ReactDOM'
-  }
+    // Optionally, if you want to EXCLUDE React from the bundle (not recommended for your use case)
+    // react: 'React',
+    // 'react-dom': 'ReactDOM'
+  },
 };
